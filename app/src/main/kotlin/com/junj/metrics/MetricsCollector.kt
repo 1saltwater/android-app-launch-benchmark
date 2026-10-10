@@ -5,6 +5,7 @@ import com.junj.device.adb.ProcessAdbExecutor
 import com.junj.domain.metrics.SamplingItem
 import com.junj.metrics.parser.CommandType
 import com.junj.metrics.parser.ResultField
+import com.junj.metrics.parser.parseHyperholdReport
 import com.junj.metrics.parser.parseVmstat
 import com.junj.metrics.parser.parseZramBdStatResult
 import com.junj.metrics.parser.parseZramMmStatResult
@@ -42,6 +43,16 @@ class MetricsCollector(
         }
 
         val zramBd = parseZramBdStatResult(adb.rootShell("cat /sys/block/zram0/bd_stat").output)
+
+        val hyperholdReport = adb.rootShell("cat /sys/block/zram0/hyperhold_report")
+        val hh = parseHyperholdReport(hyperholdReport.output)
+        if (hh == null) {
+            CommandDiagnostics.record(
+                "hyperhold/unparsed",
+                "cat /sys/block/zram0/hyperhold_report",
+                hyperholdReport.output,
+            )
+        }
 
         return SamplingItem(
             sampleStamp = sampleStamp,
@@ -91,6 +102,23 @@ class MetricsCollector(
             zswapPoolTotalSize = readRootLong("cat /sys/kernel/debug/zswap/pool_total_size"),
             zswapPoolLimitHit = readRootLong("cat /sys/kernel/debug/zswap/pool_limit_hit"),
             zswapWrittenBackPages = readRootLong("cat /sys/kernel/debug/zswap/written_back_pages"),
+
+            hhIoReqCnt = hh?.ioReqCnt ?: 0,
+            hhIoReqBytes = hh?.ioReqBytes ?: 0,
+            hhReadInBytes = hh?.readInBytes ?: 0,
+            hhWriteRawBytes = hh?.writeRawBytes ?: 0,
+            hhWriteUfsBytes = hh?.writeUfsBytes ?: 0,
+            hhFaultoutFaultCnt = hh?.faultoutFaultCnt ?: 0,
+            hhPfObjs = hh?.pfObjs ?: 0,
+            hhPfHitObjs = hh?.pfHitObjs ?: 0,
+            hhPfNeverUsedObjs = hh?.pfNeverUsedObjs ?: 0,
+            hhPfNeverUsedBytes = hh?.pfNeverUsedBytes ?: 0,
+            hhInflightPages = hh?.inflightPages ?: 0,
+            hhInflightPagesPeak = hh?.inflightPagesPeak ?: 0,
+            hhMovedInBytes = hh?.movedInBytes ?: 0,
+            hhMovedInPages = hh?.movedInPages ?: 0,
+            hhCachePages = hh?.cachePages ?: 0,
+            hhCachePagesPeak = hh?.cachePagesPeak ?: 0,
         )
     }
 

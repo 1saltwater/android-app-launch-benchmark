@@ -49,4 +49,22 @@ data class SamplingItem(
     val zswapPoolTotalSize: Long,
     val zswapPoolLimitHit: Long,
     val zswapWrittenBackPages: Long,
+
+    // ===== hyperhold 下刷/回抬统计（累计值） =====
+    val hhIoReqCnt: Long = 0,
+    val hhIoReqBytes: Long = 0,
+    val hhReadInBytes: Long = 0,
+    val hhWriteRawBytes: Long = 0,
+    val hhWriteUfsBytes: Long = 0,
+    val hhFaultoutFaultCnt: Long = 0,
+    val hhPfObjs: Long = 0,
+    val hhPfHitObjs: Long = 0,
+    val hhPfNeverUsedObjs: Long = 0,
+    val hhPfNeverUsedBytes: Long = 0,
+    val hhInflightPages: Long = 0,
+    val hhInflightPagesPeak: Long = 0,
+    val hhMovedInBytes: Long = 0,
+    val hhMovedInPages: Long = 0,
+    val hhCachePages: Long = 0,
+    val hhCachePagesPeak: Long = 0,
 )

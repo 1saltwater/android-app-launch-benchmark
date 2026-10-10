@@ -30,6 +30,7 @@
 | 12 | `test.ps1`（新增） | Windows 版批跑脚本（对应同事的 `test.sh`） |
 | 13 | `gradle/wrapper/gradle-wrapper.properties` | 单独提交：Gradle 发行版改用腾讯镜像（仅本机网络便利，可随时还原） |
 | 14 | `device/swap/SwapController.kt`、`cli/AppCommand.kt`、`config/ExperimentConfig.kt` | flash swap 防写死保护：创建文件前检查 `/data` 剩余空间；新增 `-s/--flash-swap-size-mb`；本地默认值 4096MB → 1024MB |
+| 15 | `domain/metrics/SamplingItem.kt`、`metrics/parser/ParseZramStat.kt`、`metrics/MetricsCollector.kt`、`output/csv/CsvWriter.kt` | hyperhold 下刷/回抬统计接入每 10s 采样：新增 `parseHyperholdReport()`（解析 `/sys/block/zram0/hyperhold_report` 的 "hyperhold io stat" 段），`sample.csv` 新增 21 列（含 ReadAmp/WriteAmp、PF 命中率、读写带宽） |
 
 ## 三、Windows 上的关键实现细节（都是踩过的坑）
 
@@ -79,7 +80,7 @@ cd "D:\桌面\NNSS\swap项目\统计任务\android_app_launch_test"
 | --- | --- |
 | `summary.txt` | 冷/温/热启动次数、平均启动耗时、lmkdCnt、温度均值、PSI 增量、总运行时长 |
 | `launch.log` / `launch.csv` | 每次启动一行：应用、LaunchState、TotalTime/WaitTime、Status |
-| `sample.log` / `sample.csv` | 每 `sampleIntervalMs` 一行：meminfo、PSI、vmstat、温度、zRAM/zSwap |
+| `sample.log` / `sample.csv` | 每 `sampleIntervalMs` 一行：meminfo、PSI、vmstat、温度、zRAM/zSwap、hyperhold（下刷/回抬统计） |
 | `logcat.log` | 低内存杀手击杀行（行数即 lmkdCnt） |
 | `command.log` | 仅在出问题时生成：失败命令、本该有输出却为空的读命令、解析失败内容的原始回显 |
 

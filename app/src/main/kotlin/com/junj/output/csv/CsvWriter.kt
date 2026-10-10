@@ -128,6 +128,27 @@ fun saveSampleResultsToCsv(
                 "zswapPoolLimitHit",
                 "zswapWrittenBackPages",
                 "zswapWriteBw(KB/s)",
+                "hhIoReqCnt",
+                "hhIoReqBytes",
+                "hhReadInBytes",
+                "hhReadAmpX100",
+                "hhWriteRawBytes",
+                "hhWriteUfsBytes",
+                "hhWriteAmpX100",
+                "hhFaultoutFaultCnt",
+                "hhPfObjs",
+                "hhPfHitObjs",
+                "hhPfNeverUsedObjs",
+                "hhPfNeverUsedBytes",
+                "hhPfHitRateX100",
+                "hhInflightPages",
+                "hhInflightPagesPeak",
+                "hhMovedInBytes",
+                "hhMovedInPages",
+                "hhCachePages",
+                "hhCachePagesPeak",
+                "hhReadBw(KB/s)",
+                "hhWriteBw(KB/s)",
             ).joinToString(",")
         )
 
@@ -176,7 +197,31 @@ fun saveSampleResultsToCsv(
                     item.zswapPoolLimitHit,
                     item.zswapWrittenBackPages,
                     if (index == 0) (item.zswapPoolLimitHit + item.zswapWrittenBackPages) * 4 * 1024 / sampleIntervalMs
-                    else (item.zswapPoolLimitHit + item.zswapWrittenBackPages - results[index - 1].zswapPoolLimitHit - results[index - 1].zswapWrittenBackPages) * 4 * 1024 / sampleIntervalMs
+                    else (item.zswapPoolLimitHit + item.zswapWrittenBackPages - results[index - 1].zswapPoolLimitHit - results[index - 1].zswapWrittenBackPages) * 4 * 1024 / sampleIntervalMs,
+                    item.hhIoReqCnt,
+                    item.hhIoReqBytes,
+                    item.hhReadInBytes,
+                    if (item.hhIoReqBytes > 0) item.hhReadInBytes * 100 / item.hhIoReqBytes else 0,
+                    item.hhWriteRawBytes,
+                    item.hhWriteUfsBytes,
+                    if (item.hhWriteRawBytes > 0) item.hhWriteUfsBytes * 100 / item.hhWriteRawBytes else 0,
+                    item.hhFaultoutFaultCnt,
+                    item.hhPfObjs,
+                    item.hhPfHitObjs,
+                    item.hhPfNeverUsedObjs,
+                    item.hhPfNeverUsedBytes,
+                    if (item.hhPfHitObjs + item.hhPfNeverUsedObjs > 0)
+                        item.hhPfHitObjs * 100 / (item.hhPfHitObjs + item.hhPfNeverUsedObjs) else 0,
+                    item.hhInflightPages,
+                    item.hhInflightPagesPeak,
+                    item.hhMovedInBytes,
+                    item.hhMovedInPages,
+                    item.hhCachePages,
+                    item.hhCachePagesPeak,
+                    if (index == 0) item.hhReadInBytes / sampleIntervalMs
+                    else (item.hhReadInBytes - results[index - 1].hhReadInBytes) / sampleIntervalMs,
+                    if (index == 0) item.hhWriteUfsBytes / sampleIntervalMs
+                    else (item.hhWriteUfsBytes - results[index - 1].hhWriteUfsBytes) / sampleIntervalMs,
                 ).joinToString(",") { value->
                     escapeCsv(value.toString())
                 }
