@@ -149,6 +149,15 @@ fun saveSampleResultsToCsv(
                 "hhCachePagesPeak",
                 "hhReadBw(KB/s)",
                 "hhWriteBw(KB/s)",
+                "slMode",
+                "slSampleRate",
+                "slInCount",
+                "slInSampled",
+                "slInMeanNs",
+                "slInP50Ns",
+                "slInP90Ns",
+                "slInP99Ns",
+                "slInMaxNs",
             ).joinToString(",")
         )
 
@@ -222,6 +231,15 @@ fun saveSampleResultsToCsv(
                     else (item.hhReadInBytes - results[index - 1].hhReadInBytes) / sampleIntervalMs,
                     if (index == 0) item.hhWriteUfsBytes / sampleIntervalMs
                     else (item.hhWriteUfsBytes - results[index - 1].hhWriteUfsBytes) / sampleIntervalMs,
+                    item.slMode,
+                    item.slSampleRate,
+                    item.slInCount,
+                    item.slInSampled,
+                    item.slInMeanNs,
+                    item.slInP50Ns,
+                    item.slInP90Ns,
+                    item.slInP99Ns,
+                    item.slInMaxNs,
                 ).joinToString(",") { value->
                     escapeCsv(value.toString())
                 }

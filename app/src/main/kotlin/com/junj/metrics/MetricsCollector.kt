@@ -11,6 +11,8 @@ import com.junj.metrics.parser.parseZramBdStatResult
 import com.junj.metrics.parser.parseZramMmStatResult
 import com.junj.metrics.parser.regexFindField
 import com.junj.output.logging.CommandDiagnostics
+//新增
+import com.junj.metrics.parser.parseSwapLatencySummary
 
 class MetricsCollector(
     private val adb: AdbExecutor = ProcessAdbExecutor,
@@ -52,7 +54,12 @@ class MetricsCollector(
                 "cat /sys/block/zram0/hyperhold_report",
                 hyperholdReport.output,
             )
+
         }
+        //swap延迟
+        val swapLatency = parseSwapLatencySummary(
+            adb.rootShell("cat /sys/kernel/mm/swap_latency/summary").output
+        )
 
         return SamplingItem(
             sampleStamp = sampleStamp,
@@ -102,7 +109,8 @@ class MetricsCollector(
             zswapPoolTotalSize = readRootLong("cat /sys/kernel/debug/zswap/pool_total_size"),
             zswapPoolLimitHit = readRootLong("cat /sys/kernel/debug/zswap/pool_limit_hit"),
             zswapWrittenBackPages = readRootLong("cat /sys/kernel/debug/zswap/written_back_pages"),
-
+            
+            //hyperhold统计
             hhIoReqCnt = hh?.ioReqCnt ?: 0,
             hhIoReqBytes = hh?.ioReqBytes ?: 0,
             hhReadInBytes = hh?.readInBytes ?: 0,
@@ -119,6 +127,17 @@ class MetricsCollector(
             hhMovedInPages = hh?.movedInPages ?: 0,
             hhCachePages = hh?.cachePages ?: 0,
             hhCachePagesPeak = hh?.cachePagesPeak ?: 0,
+
+            //swap延迟统计
+            slMode = swapLatency?.mode ?: 0,
+            slSampleRate = swapLatency?.sampleRate ?: 0,
+            slInCount = swapLatency?.inCount ?: 0,
+            slInSampled = swapLatency?.inSampled ?: 0,
+            slInMeanNs = swapLatency?.inMeanNs ?: 0,
+            slInP50Ns = swapLatency?.inP50Ns ?: 0,
+            slInP90Ns = swapLatency?.inP90Ns ?: 0,
+            slInP99Ns = swapLatency?.inP99Ns ?: 0,
+            slInMaxNs = swapLatency?.inMaxNs ?: 0,
         )
     }
 

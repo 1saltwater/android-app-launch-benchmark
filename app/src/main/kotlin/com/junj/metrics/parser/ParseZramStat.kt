@@ -121,3 +121,57 @@ fun parseHyperholdReport(output: String): HyperholdStatResult? {
         cachePagesPeak = v("cache_pages_peak"),
     )
 }
+
+//新增 swap延迟统计
+data class SwapLatencyResult(
+    val mode: Long,
+    val sampleRate: Long,
+    val inCount: Long,
+    val inSampled: Long,
+    val inMeanNs: Long,
+    val inP50Ns: Long,
+    val inP90Ns: Long,
+    val inP99Ns: Long,
+    val inMaxNs: Long,
+)
+
+/**
+ * 解析 /sys/kernel/mm/swap_latency/summary（只含 swap_in_major 一段）。
+ *
+ *   mode: on
+ *   sample_rate: 16
+ *   --- swap_in_major ---
+ *   count: ...
+ *
+ * 内核未打补丁时返回 null。
+ */
+fun parseSwapLatencySummary(output: String): SwapLatencyResult? {
+    if (output.isBlank() || !output.contains("swap_in_major"))
+        return null
+
+    val m = mutableMapOf<String, Long>()
+    output.lineSequence().forEach { raw ->
+        val t = raw.trim()
+        if (t.startsWith("---") || t.startsWith("mode:"))
+            return@forEach
+        val i = t.indexOf(':')
+        if (i <= 0)
+            return@forEach
+        val value = t.substring(i + 1).trim().toLongOrNull() ?: return@forEach
+        m[t.substring(0, i).trim()] = value
+    }
+
+    fun v(k: String) = m[k] ?: 0L
+
+    return SwapLatencyResult(
+        mode = if (output.contains("mode: on")) 1L else 0L,
+        sampleRate = v("sample_rate"),
+        inCount = v("count"),
+        inSampled = v("sampled"),
+        inMeanNs = v("mean_ns"),
+        inP50Ns = v("p50_ns"),
+        inP90Ns = v("p90_ns"),
+        inP99Ns = v("p99_ns"),
+        inMaxNs = v("max_ns"),
+    )
+}
